@@ -21,6 +21,9 @@ fn main() -> GameResult<()> {
 }
 
 macro_rules! color {
+    ($name:ident) => {
+        Color::$name
+    };
     ($r:expr, $g:expr, $b:expr) => {
         Color::new(
             $r as u8 as f32 / 255.0,
@@ -54,6 +57,48 @@ struct Main {
     show_debug: bool,
     tile_active: Option<(i32, i32)>,
     tile_hover: Option<(i32, i32)>,
+    board: Board,
+}
+
+struct Board(Grid);
+
+type Grid = [[TileState; 8]; 8];
+
+macro_rules! piece {
+    ($color:ident $kind:ident) => {
+        Piece {
+            kind: PieceKind::$kind,
+            color: PieceColor::$color,
+        }
+    };
+}
+
+impl Default for Board {
+    fn default() -> Self {
+        let mut grid: Grid = Default::default();
+
+        for x in 0..8 {
+            grid[1][x] = Some(piece!(White Pawn));
+        }
+        for x in 0..8 {
+            grid[6][x] = Some(piece!(Black Pawn));
+        }
+
+        grid[0][1] = Some(piece!(White Rook));
+        grid[0][6] = Some(piece!(White Rook));
+        grid[7][1] = Some(piece!(Black Rook));
+        grid[7][6] = Some(piece!(Black Rook));
+
+        Board(grid)
+    }
+}
+
+impl Board {
+    pub fn tile_at_coords(&self, x: i32, y: i32) -> TileState {
+        let x: usize = x.try_into().ok()?;
+        let y: usize = y.try_into().ok()?;
+        *self.0.get(y)?.get(x)?
+    }
 }
 
 #[derive(Default)]
@@ -61,6 +106,41 @@ struct MouseState {
     down: bool,
     x: f32,
     y: f32,
+}
+
+type TileState = Option<Piece>;
+
+#[derive(Clone, Copy)]
+struct Piece {
+    kind: PieceKind,
+    color: PieceColor,
+}
+#[derive(Clone, Copy)]
+enum PieceKind {
+    Pawn,
+    Rook,
+}
+#[derive(Clone, Copy, PartialEq)]
+enum PieceColor {
+    White,
+    Black,
+}
+
+impl Piece {
+    fn symbol(&self) -> &'static str {
+        let (white, black) = match self.kind {
+            PieceKind::Pawn => ("p", "P"),
+            PieceKind::Rook => ("r", "R"),
+            // Self::Pawn => ("♙", "♟"),
+            // Self::Rook => ("♖", "♜"),
+        };
+
+        if self.color == PieceColor::White {
+            white
+        } else {
+            black
+        }
+    }
 }
 
 impl Main {
@@ -89,8 +169,8 @@ fn draw_debug_text<const N: usize>(
     let line_height = 5.0;
     let font_size = 18.0;
 
-    let text_color = Color::WHITE;
-    let background_color = Color::from_rgba(128, 0, 0, 128);
+    let text_color = color!(WHITE);
+    let background_color = color!(128, 0, 0, 128);
 
     let rect_height =
         padding * 2.0 + font_size * lines.len() as f32 + line_height * (lines.len() as f32 - 1.0);
@@ -142,7 +222,7 @@ impl EventHandler for Main {
     }
 
     fn draw(&mut self, ctx: &mut Context, quad_ctx: &mut miniquad::GraphicsContext) -> GameResult {
-        graphics::clear(ctx, quad_ctx, Color::BLACK);
+        graphics::clear(ctx, quad_ctx, color!(BLACK));
 
         let tile_rect = |x: i32, y: i32| -> graphics::Rect {
             graphics::Rect::new(
@@ -161,16 +241,34 @@ impl EventHandler for Main {
             }
         };
 
-        for x in 0..8 {
-            for y in 0..8 {
+        for y in 0..8 {
+            for x in 0..8 {
+                let rect = tile_rect(x, y);
+
                 let mesh = graphics::Mesh::new_rectangle(
                     ctx,
                     quad_ctx,
                     DrawMode::fill(),
-                    tile_rect(x, y),
+                    rect,
                     tile_color(x, y),
                 )?;
                 graphics::draw(ctx, quad_ctx, &mesh, DrawParam::default())?;
+
+                if let Some(piece) = self.board.tile_at_coords(x, y) {
+                    let text = piece.symbol();
+
+                    let font_size = 70.0;
+                    let text_color = color!(WHITE);
+
+                    let position = Point2::new(rect.x + TILE_SIZE / 2.0, rect.y);
+
+                    let mut text =
+                        graphics::Text::new((text, graphics::Font::default(), font_size));
+
+                    text.set_bounds(Point2::new(1.0, f32::INFINITY), graphics::Align::Center);
+
+                    graphics::draw(ctx, quad_ctx, &text, (position, 0.0, text_color))?;
+                }
             }
         }
 
