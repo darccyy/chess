@@ -137,6 +137,11 @@ impl Main {
         // `new` is Some if a piece is taken, or None if a move to an empty space
         let new = self.board.tile_at_coords_mut(new_coords)?;
 
+        // Check if original position is not blank
+        if old.is_none() {
+            return None;
+        }
+
         // Move piece by copying
         *new = old;
         // Delete old piece
