@@ -1,0 +1,11 @@
+/home/runner/work/wasm-thing/wasm-thing/build/wasm32-unknown-unknown/debug/deps/inflate-1851248e92c19ec4.rmeta: /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/checksum.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/writer.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/utils.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/reader.rs
+
+/home/runner/work/wasm-thing/wasm-thing/build/wasm32-unknown-unknown/debug/deps/libinflate-1851248e92c19ec4.rlib: /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/checksum.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/writer.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/utils.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/reader.rs
+
+/home/runner/work/wasm-thing/wasm-thing/build/wasm32-unknown-unknown/debug/deps/inflate-1851248e92c19ec4.d: /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/checksum.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/writer.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/utils.rs /home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/reader.rs
+
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/lib.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/checksum.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/writer.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/utils.rs:
+/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/inflate-0.4.5/src/reader.rs:
