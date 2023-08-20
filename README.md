@@ -1,11 +1,20 @@
 # Wasm thing
 
-[here](https://darccyy.github.io/wasm-thing)
+[See live here](https://darccyy.github.io/wasm-thing)
 
-Run in debug mode:
+# Usage
+
+Run for development:
 
 ```sh
-just install-deps
+just install-dev
 just serve
+```
+
+Build for production:
+
+```sh
+just install
+just build
 ```
 
