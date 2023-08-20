@@ -1,6 +1,8 @@
-# Wasm thing
+# Chess
 
-[See live here](https://darccyy.github.io/wasm-thing)
+Made with WASM in Rust.
+
+[See live here](https://darccyy.github.io/chess)
 
 # Usage
 
