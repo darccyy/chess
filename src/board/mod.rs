@@ -22,34 +22,6 @@ const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 impl Default for Board {
     fn default() -> Self {
         Self::from_fen(START_FEN)
-        // let mut grid: Grid = Default::default();
-        //
-        // for x in 0..8 {
-        //     grid[1][x] = Some(piece!(White Pawn));
-        // }
-        // for x in 0..8 {
-        //     grid[6][x] = Some(piece!(Black Pawn));
-        // }
-        //
-        // grid[0][0] = Some(piece!(White Rook));
-        // grid[0][1] = Some(piece!(White Knight));
-        // grid[0][2] = Some(piece!(White Bishop));
-        // grid[0][3] = Some(piece!(White Queen));
-        // grid[0][4] = Some(piece!(White King));
-        // grid[0][5] = Some(piece!(White Bishop));
-        // grid[0][6] = Some(piece!(White Knight));
-        // grid[0][7] = Some(piece!(White Rook));
-        //
-        // grid[7][0] = Some(piece!(Black Rook));
-        // grid[7][1] = Some(piece!(Black Knight));
-        // grid[7][2] = Some(piece!(Black Bishop));
-        // grid[7][3] = Some(piece!(Black Queen));
-        // grid[7][4] = Some(piece!(Black King));
-        // grid[7][5] = Some(piece!(Black Bishop));
-        // grid[7][6] = Some(piece!(Black Knight));
-        // grid[7][7] = Some(piece!(Black Rook));
-        //
-        // Self(grid)
     }
 }
 
