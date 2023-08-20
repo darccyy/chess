@@ -1,7 +1,11 @@
 # Cargo project name
 
-# Install wasm target and http-server
-install-deps:
+# Install wasm target (for production)
+install:
+    rustup target add wasm32-unknown-unknown
+
+# Install wasm target and http-server (for development)
+install-dev:
     rustup target add wasm32-unknown-unknown &&\
     cargo install basic-http-server
 
