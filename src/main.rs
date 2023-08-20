@@ -20,10 +20,40 @@ fn main() -> GameResult<()> {
     })
 }
 
+macro_rules! color {
+    ($r:expr, $g:expr, $b:expr) => {
+        Color::new(
+            $r as u8 as f32 / 255.0,
+            $g as u8 as f32 / 255.0,
+            $b as u8 as f32 / 255.0,
+            255.0,
+        )
+    };
+    ($r:expr, $g:expr, $b:expr, $a:expr) => {
+        Color::new(
+            $r as u8 as f32 / 255.0,
+            $g as u8 as f32 / 255.0,
+            $b as u8 as f32 / 255.0,
+            $a as u8 as f32 / 255.0,
+        )
+    };
+}
+
+const BOARD_MARGIN: f32 = 20.0;
+const TILE_SIZE: f32 = 60.0;
+const TILE_HOVER_STROKE: f32 = 4.0;
+const TILE_ACTIVE_STROKE: f32 = 2.0;
+const COLOR_TILE_A: Color = color!(140.0, 80.0, 50.0, 255.0);
+const COLOR_TILE_B: Color = color!(80, 30, 20);
+const COLOR_ACTIVE: Color = color!(255, 255, 255);
+
+#[derive(Default)]
 struct Main {
-    count: u32,
+    frame_count: u32,
     mouse: MouseState,
     show_debug: bool,
+    tile_active: Option<(i32, i32)>,
+    tile_hover: Option<(i32, i32)>,
 }
 
 #[derive(Default)]
@@ -36,9 +66,7 @@ struct MouseState {
 impl Main {
     pub fn new(_ctx: &mut Context, _quad_ctx: &mut miniquad::GraphicsContext) -> GameResult<Self> {
         let state = Main {
-            count: 1,
-            mouse: MouseState::default(),
-            show_debug: false,
+            ..Default::default()
         };
 
         Ok(state)
@@ -95,7 +123,20 @@ impl EventHandler for Main {
         _ctx: &mut Context,
         _quad_ctx: &mut miniquad::GraphicsContext,
     ) -> GameResult {
-        self.count += 1;
+        self.frame_count += 1;
+
+        let mouse_x = ((self.mouse.x - BOARD_MARGIN) / TILE_SIZE) as i32;
+        let mouse_y = ((self.mouse.y - BOARD_MARGIN) / TILE_SIZE) as i32;
+
+        self.tile_hover = if (0..8).contains(&mouse_x) && (0..8).contains(&mouse_y) {
+            Some((mouse_x, mouse_y))
+        } else {
+            None
+        };
+
+        if self.mouse.down {
+            self.tile_active = self.tile_hover;
+        }
 
         Ok(())
     }
@@ -103,50 +144,54 @@ impl EventHandler for Main {
     fn draw(&mut self, ctx: &mut Context, quad_ctx: &mut miniquad::GraphicsContext) -> GameResult {
         graphics::clear(ctx, quad_ctx, Color::BLACK);
 
-        let board_margin = 20.0;
-        let tile_size = 60.0;
-        let tile_color_a = Color::from_rgb(140, 80, 50);
-        let tile_color_b = Color::from_rgb(80, 30, 20);
-        let tile_highlight_width = 2.0;
-
-        let mouse_x = ((self.mouse.x - board_margin) / tile_size) as i32;
-        let mouse_y = ((self.mouse.y - board_margin) / tile_size) as i32;
-
         let tile_rect = |x: i32, y: i32| -> graphics::Rect {
             graphics::Rect::new(
-                x as f32 * tile_size + board_margin,
-                y as f32 * tile_size + board_margin,
-                tile_size,
-                tile_size,
+                x as f32 * TILE_SIZE + BOARD_MARGIN,
+                y as f32 * TILE_SIZE + BOARD_MARGIN,
+                TILE_SIZE,
+                TILE_SIZE,
             )
+        };
+
+        let tile_color = |x: i32, y: i32| -> Color {
+            if (x + y) % 2 == 0 {
+                COLOR_TILE_A
+            } else {
+                COLOR_TILE_B
+            }
         };
 
         for x in 0..8 {
             for y in 0..8 {
-                let color = if (x + y) % 2 == 0 {
-                    tile_color_a
-                } else {
-                    tile_color_b
-                };
-
                 let mesh = graphics::Mesh::new_rectangle(
                     ctx,
                     quad_ctx,
                     DrawMode::fill(),
                     tile_rect(x, y),
-                    color,
+                    tile_color(x, y),
                 )?;
                 graphics::draw(ctx, quad_ctx, &mesh, DrawParam::default())?;
             }
         }
 
-        if (0..8).contains(&mouse_x) && (0..8).contains(&mouse_y) {
+        if let Some((x, y)) = self.tile_hover {
             let mesh = graphics::Mesh::new_rectangle(
                 ctx,
                 quad_ctx,
-                DrawMode::stroke(tile_highlight_width),
-                tile_rect(mouse_x, mouse_y),
-                Color::WHITE,
+                DrawMode::stroke(TILE_HOVER_STROKE),
+                tile_rect(x, y),
+                tile_color(x, y),
+            )?;
+            graphics::draw(ctx, quad_ctx, &mesh, DrawParam::default())?;
+        }
+
+        if let Some((x, y)) = self.tile_active {
+            let mesh = graphics::Mesh::new_rectangle(
+                ctx,
+                quad_ctx,
+                DrawMode::stroke(TILE_ACTIVE_STROKE),
+                tile_rect(x, y),
+                COLOR_ACTIVE,
             )?;
             graphics::draw(ctx, quad_ctx, &mesh, DrawParam::default())?;
         }
@@ -159,6 +204,7 @@ impl EventHandler for Main {
                     format!("Mouse down? {}", self.mouse.down),
                     format!("Mouse X: {}", self.mouse.x),
                     format!("Mouse Y: {}", self.mouse.y),
+                    format!("Total frames: {}", self.frame_count),
                 ],
             )?;
         }
