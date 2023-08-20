@@ -23,8 +23,9 @@ jobs:
             - name: Add WASM target 🔧
               run: rustup target add wasm32-unknown-unknown
 
+            # Sync with /justfile recipe `build`
             - name: Build WASM and html 🔧
-              run: cargo build --target wasm32-unknown-unknown --target-dir build/target/ && cp assets/* build/
+              run: cargo build --release --target wasm32-unknown-unknown --target-dir build/target/ && cp assets/* build/
 
             # Push changes with plugin
             - name: Deploy 🚀
