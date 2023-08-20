@@ -25,7 +25,12 @@ jobs:
 
             # Sync with /justfile recipe `build`
             - name: Build WASM and html 🔧
-              run: cargo build --release --target wasm32-unknown-unknown && rm -rf build/ && mkdir build/ && cp target/wasm32-unknown-unknown/release/*.wasm build/ && cp assets/* build/
+              run: |
+                  cargo build --release --target wasm32-unknown-unknown &&
+                  rm -rf build/ &&
+                  mkdir build/ &&
+                  cp target/wasm32-unknown-unknown/release/*.wasm build/ &&
+                  cp assets/* build/
 
             # Push changes with plugin
             - name: Deploy 🚀
