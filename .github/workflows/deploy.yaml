@@ -1,7 +1,7 @@
 name: Build
 
 on:
-    # Triggers the workflow on push or pull request events but only for the "main" branch
+    # Triggers the workflow on push or pull request events but only for the "master" branch
     push:
         branches: ["master"]
     pull_request:
@@ -20,10 +20,14 @@ jobs:
             - name: Checkout 🛎️
               uses: actions/checkout@v3
 
-            # Run compilation script with Rust
+            - name: Add WASM target
+              run: rustup target add wasm32-unknown-unknown
+
             - name: Build WASM 🔧
-              run:
-                rustup target add wasm32-unknown-unknown && cargo build --target wasm32-unknown-unknown --target-dir build && cp index.html build
+              run: cargo build --target wasm32-unknown-unknown --target-dir build
+
+            - name: Add other files to build
+              run: cp index.html build
 
             # Push changes with plugin
             - name: Deploy 🚀
