@@ -20,14 +20,11 @@ jobs:
             - name: Checkout 🛎️
               uses: actions/checkout@v3
 
-            - name: Add WASM target
+            - name: Add WASM target 🔧
               run: rustup target add wasm32-unknown-unknown
 
-            - name: Build WASM 🔧
-              run: cargo build --target wasm32-unknown-unknown --target-dir build
-
-            - name: Add other files to build
-              run: cp index.html build
+            - name: Build WASM and html 🔧
+              run: cargo build --target wasm32-unknown-unknown --target-dir build/target/ && cp assets/* build/
 
             # Push changes with plugin
             - name: Deploy 🚀
