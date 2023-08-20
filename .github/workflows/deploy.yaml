@@ -23,8 +23,7 @@ jobs:
             # Run compilation script with Rust
             - name: Build WASM 🔧
               run:
-                cargo build --target wasm32-unknown-unknown --target-dir build \
-                && cp index.html build
+                cargo build --target wasm32-unknown-unknown --target-dir build && cp index.html build
 
             # Push changes with plugin
             - name: Deploy 🚀
