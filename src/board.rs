@@ -104,4 +104,8 @@ impl Piece {
             black
         }
     }
+
+    pub fn is_white(&self) -> bool {
+        self.color == PieceColor::White
+    }
 }

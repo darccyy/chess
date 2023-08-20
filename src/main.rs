@@ -4,6 +4,7 @@ mod board;
 mod debug;
 
 use ggez::cgmath::Point2;
+use ggez::cgmath::Vector2;
 use ggez::event::EventHandler;
 use ggez::event::KeyMods;
 use ggez::graphics;
@@ -13,7 +14,6 @@ use ggez::graphics::DrawParam;
 use ggez::input::MouseButton;
 use ggez::miniquad;
 use ggez::miniquad::KeyCode;
-use ggez::cgmath::Vector2;
 use ggez::Context;
 use ggez::GameResult;
 
@@ -49,20 +49,29 @@ macro_rules! color {
     };
 }
 
+// Board
 const BOARD_MARGIN: f32 = 20.0;
 const TILE_SIZE: f32 = 60.0;
 const TILE_HOVER_STROKE: f32 = 6.0;
 const TILE_ACTIVE_STROKE: f32 = 5.0;
-const COLOR_TILE_A: Color = color!(140, 80, 50);
-const COLOR_TILE_B: Color = color!(80, 30, 20);
+const COLOR_TILE_WHITE: Color = color!(160, 100, 70);
+const COLOR_TILE_BLACK: Color = color!(100, 50, 40);
 const COLOR_ACTIVE: Color = color!(220, 150, 120);
+// Pieces
+const COLOR_PIECE_WHITE: Color = color!(250, 180, 140);
+const COLOR_PIECE_BLACK: Color = color!(30, 10, 0);
+// Move trace
+const MAX_RECENT_MOVES: usize = 2;
+const RECENT_MOVE_WIDTH: f32 = 6.0;
+const RECENT_MOVE_OPACITY: f32 = 0.2;
+const COLOR_RECENT_MOVE: Color = color!(255, 255, 255);
 
 #[derive(Default)]
 struct Main {
     board: Board,
     tile_active: Option<Coords>,
     tile_hover: Option<Coords>,
-    previous_move: Option<(Coords, Coords)>,
+    recent_moves: Vec<(Coords, Coords)>,
     mouse: MouseState,
     events: Events,
     show_debug: bool,
@@ -112,21 +121,21 @@ impl Main {
 }
 
 impl Main {
-    fn move_piece(&mut self) {
+    fn move_piece(&mut self) -> Option<(Coords, Coords)> {
         // A tile is currently active, and another is hovered
-        let Some((old_coords, new_coords)) = self.tile_active.zip(self.tile_hover ) else {
-            return;
-        };
+        let old_coords = self.tile_active?;
+        let new_coords = self.tile_hover?;
+
         // Check if tile is same position
         if old_coords == new_coords {
-            return;
+            return None;
         }
 
         // Get value of old piece
-        let Some(old) = self.board.tile_at_coords(old_coords) else { return };
+        let old = self.board.tile_at_coords(old_coords)?;
         // Get mutable reference to new piece
         // `new` is Some if a piece is taken, or None if a move to an empty space
-        let Some(new) = self.board.tile_at_coords_mut(new_coords) else { return };
+        let new = self.board.tile_at_coords_mut(new_coords)?;
 
         // Move piece by copying
         *new = old;
@@ -135,7 +144,8 @@ impl Main {
             *old = None;
         }
 
-        self.previous_move = Some((old_coords, new_coords));
+        // Return successful move
+        Some((old_coords, new_coords))
     }
 }
 
@@ -157,12 +167,23 @@ impl EventHandler for Main {
         };
 
         if self.mouse.down {
+            // First frame with mouse down, since mouse was not down
             if !self.events.mouse_clicked {
                 self.events.mouse_clicked = true;
+
                 if self.tile_active.is_none() {
+                    // Set active to hovered, if no active tile
                     self.tile_active = self.tile_hover;
                 } else {
-                    self.move_piece();
+                    // Move piece
+                    if let Some(new_move) = self.move_piece() {
+                        // Add new recent move to trace
+                        self.recent_moves.push(new_move);
+                        // Limit to three items (from end)
+                        self.recent_moves
+                            .drain(..self.recent_moves.len().saturating_sub(MAX_RECENT_MOVES));
+                    }
+
                     self.tile_active = None;
                 }
             }
@@ -187,9 +208,9 @@ impl EventHandler for Main {
 
         let tile_color = |x: i32, y: i32| -> Color {
             if (x + y) % 2 == 0 {
-                COLOR_TILE_A
+                COLOR_TILE_WHITE
             } else {
-                COLOR_TILE_B
+                COLOR_TILE_BLACK
             }
         };
 
@@ -210,7 +231,11 @@ impl EventHandler for Main {
                     let text = piece.symbol();
 
                     let font_size = 70.0;
-                    let text_color = color!(WHITE);
+                    let text_color = if piece.is_white() {
+                        COLOR_PIECE_WHITE
+                    } else {
+                        COLOR_PIECE_BLACK
+                    };
 
                     let position = Point2::new(rect.x + TILE_SIZE / 2.0, rect.y);
 
@@ -246,9 +271,11 @@ impl EventHandler for Main {
             graphics::draw(ctx, quad_ctx, &mesh, DrawParam::default())?;
         }
 
-        if let Some((old, new)) = self.previous_move {
-            const MOVE_ARROW_WIDTH: f32 = 8.0;
-            const COLOR_MOVE_ARROW: Color = color!(255, 255, 255, 100);
+        for (i, (old, new)) in self.recent_moves.iter().enumerate() {
+            let color = Color {
+                a: (i + 1) as f32 / (MAX_RECENT_MOVES + 1) as f32 * RECENT_MOVE_OPACITY,
+                ..COLOR_RECENT_MOVE
+            };
 
             let offset = Vector2 {
                 x: BOARD_MARGIN + TILE_SIZE / 2.0,
@@ -260,13 +287,7 @@ impl EventHandler for Main {
                 new.as_point2() * TILE_SIZE + offset,
             ];
 
-            let line = graphics::Mesh::new_line(
-                ctx,
-                quad_ctx,
-                points,
-                MOVE_ARROW_WIDTH,
-                COLOR_MOVE_ARROW,
-            )?;
+            let line = graphics::Mesh::new_line(ctx, quad_ctx, points, RECENT_MOVE_WIDTH, color)?;
 
             graphics::draw(ctx, quad_ctx, &line, DrawParam::default())?;
         }
@@ -282,6 +303,7 @@ impl EventHandler for Main {
                     format!("Total frames: {}", self.frame_count),
                     format!("Active tile: {:?}", self.tile_active),
                     format!("Hovered tile: {:?}", self.tile_active),
+                    format!("Recent moves: {:?}", self.recent_moves),
                 ],
             )?;
         }
